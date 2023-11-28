@@ -15,3 +15,12 @@ CNC machine controller hardware.
 Set up a PostgreSQL database and provide the database URL and credentials in application.yml.
 Make Sure to have proper read/write permissions for the "upload" directory, where GCode files
 will be stored (uploaded by the client).
+
+
+# Functional aspects
+
+## Data model
+![alt text](md/class_diagram.png "Data model")
+
+## Use cases
+![alt text](md/use_case_diagram.png "Use cases")
