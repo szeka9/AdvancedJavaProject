@@ -44,7 +44,7 @@ public class ToolPathController {
     private final ToolPathRepository toolPathRepository;
     private final UserRepository userRepository;
 
-    @Operation(summary = "Retrieve a list of tool paths.")
+    @Operation(summary = "Retrieve a list of public tool paths.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List of toolpaths."),
             @ApiResponse(responseCode = "400", description = "Invalid url params supplied.")
@@ -68,8 +68,8 @@ public class ToolPathController {
                 Sort.by(Sort.Direction.ASC, "dateOfCreation") :
                 Sort.by(Sort.Direction.DESC, "dateOfCreation");
 
-        return toolPathRepository.findByDateOfCreationBetweenAndNameContaining(
-                        createdAfter, createdBefore, name, PageRequest.of(page,limit, sortParam))
+        return toolPathRepository.findByDateOfCreationBetweenAndNameContainingAndIsPublicEquals(
+                        createdAfter, createdBefore, name, PageRequest.of(page,limit, sortParam), true)
                 .stream().map(ToolPathDto::fromToolPath).toList();
     }
 
@@ -84,12 +84,17 @@ public class ToolPathController {
             @PathVariable Integer toolpathId
     ) throws IOException {
         Optional<ToolPath> toolpathById = toolPathRepository.findById(toolpathId);
+        Optional<User> userByName = userRepository.findByName(authentication.getName());
 
         if (toolpathById.isEmpty()) {
             throw new NoSuchElementException(String.format("Tool path by ID %d does not exist.", toolpathId));
         }
 
-        if (!toolpathById.get().getCreatedByUser().getName().equals(authentication.getName())) {
+        if (userByName.isEmpty() ||
+            (!toolpathById.get().getCreatedByUser().equals(userByName.get()) &&
+                    !toolpathById.get().getVisibleByGroup().getGroupMembers().contains(userByName.get())) ||
+            (!toolpathById.get().getIsPublic() &&
+                    !toolpathById.get().getCreatedByUser().getName().equals(authentication.getName()))) {
             throw new AccessDeniedException("Unauthorized.");
         }
 

@@ -56,7 +56,15 @@ public class UserGroupController {
             @ApiResponse(responseCode = "200", description = "User group is created.")
     })
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void createGroup(@RequestBody UserGroup userGroup){
+    public void createGroup(
+            Authentication authentication,
+            @RequestBody UserGroup userGroup){
+
+        var foundUser = userRepository.findByName(authentication.getName());
+        if (foundUser.isEmpty()) {
+            throw new NoSuchElementException(String.format("Invalid user."));
+        }
+        userGroup.setManagedByUser(foundUser.get());
         userGroupRepository.save(userGroup);
     }
 
@@ -165,11 +173,11 @@ public class UserGroupController {
             throw new NoSuchElementException(String.format("Group by ID %s does not exist.", groupId));
         }
 
-        if (!foundUser.get().getMembership().contains(foundGroup.get())) {
+        if (!foundUser.get().getMembership().contains(foundGroup.get()) &&
+            !foundUser.get().equals(foundGroup.get().getManagedByUser())) {
             throw new AccessDeniedException("User is unauthorized to list toolpaths.");
         }
 
-        return foundGroup.get().getToolPaths().stream().filter(ToolPath::getIsPublic)
-                .map(ToolPathDto::fromToolPath).toList();
+        return foundGroup.get().getToolPaths().stream().map(ToolPathDto::fromToolPath).toList();
     }
 }

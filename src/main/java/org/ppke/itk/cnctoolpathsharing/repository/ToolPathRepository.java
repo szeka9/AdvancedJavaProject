@@ -11,8 +11,9 @@ import java.time.LocalDateTime;
 public interface ToolPathRepository extends JpaRepository<ToolPath, Integer> {
     ToolPath save(ToolPath toolPath);
 
-    Page<ToolPath> findByDateOfCreationBetweenAndNameContaining(LocalDateTime startDate,
+    Page<ToolPath> findByDateOfCreationBetweenAndNameContainingAndIsPublicEquals(LocalDateTime startDate,
                                                                 LocalDateTime endDate,
                                                                 String name,
-                                                                Pageable page);
+                                                                Pageable page,
+                                                                Boolean isPublic);
 }
