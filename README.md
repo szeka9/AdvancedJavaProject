@@ -19,6 +19,9 @@ will be stored (uploaded by the client).
 Swagger documentation is available at <host>/v3/api-docs and <host>/swagger-ui/index.html after
 starting the application.
 
+To access the endpoints, basic authentication must be used. As an example, two users are added
+by default (admin:admin - system administration role, kalman:kalman - user role).
+
 # Functional aspects
 
 ## Data model
